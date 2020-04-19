@@ -1,0 +1,156 @@
+/*
+ * Created by brightSPARK Labs
+ * www.brightsparklabs.com
+ */
+
+// -----------------------------------------------------------------------------
+// PLUGINS
+// -----------------------------------------------------------------------------
+
+plugins {
+    // Apply the brightSPARK Labs plugin for standardisation
+    id 'com.brightsparklabs.gradle.baseline' version "0.1.0"
+
+    // Apply the java-library plugin to add support for Java Library
+    id 'java-library'
+
+    // Apply the groovy plugin to also add support for Groovy (needed for Spock)
+    id 'groovy'
+
+    // Apply bintray plugin for publishing artifacts
+    id "com.jfrog.bintray" version "1.8.4"
+    id "maven-publish"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+// -----------------------------------------------------------------------------
+// PROJECT IDENTIFICATION
+// -----------------------------------------------------------------------------
+
+project.description  = 'Simple Audit Logging Framework'
+project.ext.url      = 'https://github.com/brightsparklabs/sal4'
+project.ext.scm      = 'https://github.com/brightsparklabs/sal4j.git'
+
+// -----------------------------------------------------------------------------
+// REPOSITORIES/DEPENDENCIES
+// -----------------------------------------------------------------------------
+
+repositories {
+    // Use jcenter for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+dependencies {
+    def versions = [
+        immutables: '2.8.1',
+    ]
+    // These dependencies are found on compile classpath of this component and consumers.
+    implementation(
+            // General
+            'com.google.guava:guava:27.0.1-jre',
+            )
+
+    compileOnly(
+            "org.immutables:value:${versions.immutables}",
+            // We add this so that Immutables will annotate its generated classes with
+            // @SuppressFBWarnings, and thus avoid Findbugs errors for those generated classes.
+            'com.google.code.findbugs:annotations:3.0.1'
+            )
+
+    testImplementation(
+            // Use the awesome Spock testing and specification framework even with Java
+            'org.codehaus.groovy:groovy-all:2.5.6',
+            'org.spockframework:spock-core:1.2-groovy-2.5',
+            'junit:junit:4.12',
+
+            // So that we can suppress some spotbugs reports
+            'com.github.spotbugs:spotbugs-annotations:3.1.12',
+            )
+
+    annotationProcessor(
+            "org.immutables:value:${versions.immutables}",
+            )
+}
+
+// -----------------------------------------------------------------------------
+// PUBLISH ARTIFACTS (via bintray)
+// -----------------------------------------------------------------------------
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['Publication']
+    override = true
+    publish = true
+    pkg {
+        repo = 'maven'
+        name = project.name
+        userOrg = 'brightsparklabs'
+        licenses = ['MIT']
+        vcsUrl = project.ext.url
+        version {
+            name = project.version
+            vcsTag = project.version
+            released = new Date()
+        }
+    }
+}
+
+// Include javadoc and sources (requirements for publishing to Maven Central)
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+def pomConfig = {
+    name project.name
+    packaging 'jar'
+    description project.description
+    url project.url
+
+    scm {
+        connection project.scm
+        developerConnection project.scm
+        url project.scm
+    }
+
+    licenses {
+        license {
+            name 'MIT License'
+            url 'http://www.opensource.org/licenses/mit-license.php'
+        }
+    }
+
+    developers {
+        developer {
+            id 'brightsparklabs'
+            name 'brightSPARK Labs'
+            email 'enquire@brightsparklabs.com'
+        }
+    }
+}
+
+publishing {
+    publications {
+        Publication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId project.group
+            artifactId project.name
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
