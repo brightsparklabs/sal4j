@@ -18,7 +18,7 @@ plugins {
     id 'groovy'
 
     // Apply bintray plugin for publishing artifacts
-    id "com.jfrog.bintray" version "1.8.4"
+    id "com.jfrog.bintray" version "1.8.5"
     id "maven-publish"
 }
 
@@ -29,8 +29,8 @@ targetCompatibility = 1.8
 // PROJECT IDENTIFICATION
 // -----------------------------------------------------------------------------
 
-project.description  = 'Simple Audit Logging Framework'
-project.ext.url      = 'https://github.com/brightsparklabs/sal4'
+project.description  = 'Simple Audit Logging for Java'
+project.ext.url      = 'https://github.com/brightsparklabs/sal4j'
 project.ext.scm      = 'https://github.com/brightsparklabs/sal4j.git'
 
 // -----------------------------------------------------------------------------
@@ -45,15 +45,20 @@ repositories {
 
 dependencies {
     def versions = [
-        immutables: '2.8.1',
+        immutables: '2.8.2',
     ]
+
     // These dependencies are found on compile classpath of this component and consumers.
     implementation(
             // General
-            'com.google.guava:guava:27.0.1-jre',
+            'org.slf4j:slf4j-api:1.7.30',
+            'net.logstash.logback:logstash-logback-encoder:6.3'
             )
 
     compileOnly(
+            "org.immutables:value-annotations:${versions.immutables}",
+            )
+    annotationProcessor(
             "org.immutables:value:${versions.immutables}",
             // We add this so that Immutables will annotate its generated classes with
             // @SuppressFBWarnings, and thus avoid Findbugs errors for those generated classes.
@@ -62,16 +67,15 @@ dependencies {
 
     testImplementation(
             // Use the awesome Spock testing and specification framework even with Java
-            'org.codehaus.groovy:groovy-all:2.5.6',
-            'org.spockframework:spock-core:1.2-groovy-2.5',
-            'junit:junit:4.12',
+            'org.codehaus.groovy:groovy-all:3.0.3',
+            'org.spockframework:spock-core:2.0-M2-groovy-3.0',
+            'junit:junit:4.13',
 
             // So that we can suppress some spotbugs reports
-            'com.github.spotbugs:spotbugs-annotations:3.1.12',
-            )
+            'com.github.spotbugs:spotbugs-annotations:4.0.1',
 
-    annotationProcessor(
-            "org.immutables:value:${versions.immutables}",
+            // Logger implementation.
+            'ch.qos.logback:logback-classic:1.2.3'
             )
 }
 
@@ -101,12 +105,12 @@ bintray {
 
 // Include javadoc and sources (requirements for publishing to Maven Central)
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
