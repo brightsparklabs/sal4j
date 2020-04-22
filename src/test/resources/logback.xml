@@ -1,0 +1,14 @@
+<!-- logback configuration used by unit tests -->
+<configuration>
+    <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+    <appender name="jsonFileAppender" class="ch.qos.logback.core.FileAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <file>/tmp/sal4j-test.log</file>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="jsonConsoleAppender"/>
+        <appender-ref ref="jsonFileAppender"/>
+    </root>
+</configuration>
