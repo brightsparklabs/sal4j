@@ -9,7 +9,7 @@
 
 plugins {
     // Apply the brightSPARK Labs plugin for standardisation.
-    id 'com.brightsparklabs.gradle.baseline' version "4.7.0"
+    id 'com.brightsparklabs.gradle.baseline' version '4.7.0'
 
     // Apply the java-library plugin to add support for Java Library.
     id 'java-library'
@@ -17,7 +17,15 @@ plugins {
     // Apply the groovy plugin to also add support for Groovy (needed for Spock).
     id 'groovy'
 
-    id "maven-publish"
+    // -----------------------------------------------------------------------------
+    // PUBLISHING
+    // -----------------------------------------------------------------------------
+
+    id 'maven-publish'
+    // Maven Central requires artifacts to be signed.
+    id 'signing'
+    // Maven Central requires artifacts to be released via Sonatype Nexus.
+    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
 java {
@@ -31,15 +39,16 @@ java {
 
 project.description  = 'Simple Audit Logging for Java'
 project.ext.url      = 'https://github.com/brightsparklabs/sal4j'
-project.ext.scm      = 'https://github.com/brightsparklabs/sal4j.git'
+project.ext.scm      = 'scm:git@github.com:brightsparklabs/sal4j.git'
+project.group        = 'com.brightsparklabs'
+project.version      = 'git describe --always --dirty'.execute().text.trim()
 
 // -----------------------------------------------------------------------------
 // REPOSITORIES/DEPENDENCIES
 // -----------------------------------------------------------------------------
 
 repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
+    // Use mavenCentral for resolving your dependencies.
     mavenCentral()
 }
 
@@ -77,4 +86,89 @@ dependencies {
             // Logger implementation.
             'ch.qos.logback:logback-classic:1.5.8'
             )
+}
+
+// -----------------------------------------------------------------------------
+// SETUP ARTIFACTS FOR PUBLISHING
+// -----------------------------------------------------------------------------
+
+// Maven Central requires javadoc and sources.
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+
+            // Maven Central requires specific POM attributes.
+            pom {
+                name = project.name
+                description = project.description
+                url = project.url
+
+                scm {
+                    connection = project.scm
+                    developerConnection = project.scm
+                    url = project.scm
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'brightsparklabs'
+                        name = 'brightSPARK Labs'
+                        email = 'enquire@brightsparklabs.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Maven Central requires signed artifacts.
+signing {
+    def signingKey = findProperty('signingKey')
+    def signingPassword = findProperty('signingPassword')
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
+
+    // Only require signing when publishing (otherwise normal builds would need GPG keys).
+    required { gradle.taskGraph.hasTask('publishToSonatype') }
+}
+
+// -----------------------------------------------------------------------------
+// PUBLISH ARTIFACTS (via nexus)
+// -----------------------------------------------------------------------------
+
+nexusPublishing {
+    repositories {
+        // Credentials default to:
+        // - Property `sonatypeUsername` or ENV variable `ORG_GRADLE_PROJECT_sonatypeUsername`.
+        // - Property `sonatypePassword` or ENV variable ORG_GRADLE_PROJECT_sonatypePassword`.
+        sonatype()
+    }
+}
+
+
+task prePublishToMavenCentral {
+    group 'brightSPARK Labs - Maven Central Publishing'
+    description 'Stages the release on Sonatype ready for publishing to Maven Central.'
+    dependsOn 'publishToSonatype', 'closeSonatypeStagingRepository'
+}
+task publishToMavenCentral {
+    group 'brightSPARK Labs - Maven Central Publishing'
+    description 'Publishes the release to Maven Central.'
+    dependsOn 'publishToSonatype', 'closeAndReleaseSonatypeStagingRepository'
 }
