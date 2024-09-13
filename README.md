@@ -7,7 +7,7 @@ A simple Audit Logging framework for Java which can produce structured logs in J
 
 # Prerequisites
 
-- Java 21 or higher.
+- Java 17 or higher.
 
 # Usage
 

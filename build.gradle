@@ -25,12 +25,12 @@ plugins {
     // Maven Central requires artifacts to be signed.
     id 'signing'
     // Maven Central requires artifacts to be released via Sonatype Nexus.
-    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 // -----------------------------------------------------------------------------
