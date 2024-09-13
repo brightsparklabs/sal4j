@@ -19,38 +19,24 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableAuditEvent.Builder.class)
 interface AuditEvent {
-    /**
-     * @return The action which was performed.
-     */
+    /** Returns The action which was performed. */
     AuditAction getAction();
 
-    /**
-     * @return The result of the action.
-     */
+    /** Returns The result of the action. */
     AuditResult getResult();
 
-    /**
-     * @return The subject performing the action.
-     */
+    /** Returns The subject performing the action. */
     String getSubject();
 
-    /**
-     * @return The object the action was applied to.
-     */
+    /** Returns The object the action was applied to. */
     String getObject();
 
-    /**
-     * @return A message describing the result of the action.
-     */
+    /** Returns A message describing the result of the action. */
     String getMessage();
 
-    /**
-     * @return The source from which the subject applied the action.
-     */
+    /** Returns The source from which the subject applied the action. */
     String getOrigin();
 
-    /**
-     * @return Any other details to include in the log.
-     */
+    /** Returns Any other details to include in the log. */
     Map<String, Object> getDetails();
 }
