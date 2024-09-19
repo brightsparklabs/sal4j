@@ -5,9 +5,12 @@
 
 A simple Audit Logging framework for Java which can produce structured logs in JSON format.
 
-# Prerequisites
+## Compatibility
 
-- Java 17 or higher.
+| Plugin Version | Gradle Version | Java Version
+| -------------- | -------------- | ------------
+| 1.x.y          | 8.x.y          | 17
+| 0.x.y          | 6.x.y          | 11
 
 # Usage
 
@@ -22,7 +25,7 @@ E.g. via `gradle`:
 
     dependencies {
         implementation "com.brightsparklabs:sal4j:$version"
-        
+
         // To log in json format.
         implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
         runtimeOnly 'ch.qos.logback:logback-classic:1.5.8'
@@ -149,7 +152,7 @@ Custom audit actions can be added by implementing `AuditAction`. For simplicity,
         DESTROY,
         RECREATE,
     }
-    
+
     AuditLogger.log(CustomAuditActions.DESTROY, ...);
 
 ### Results
