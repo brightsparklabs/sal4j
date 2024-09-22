@@ -65,13 +65,11 @@ dependencies {
             )
 
     compileOnly(
-            "org.immutables:value-annotations:${versions.immutables}",
+            "org.immutables:value-annotations:${versions.immutables}"
             )
+
     annotationProcessor(
-            "org.immutables:value:${versions.immutables}",
-            // We add this so that Immutables will annotate its generated classes with
-            // @SuppressFBWarnings, and thus avoid Findbugs errors for those generated classes.
-            'com.google.code.findbugs:annotations:3.0.1'
+            "org.immutables:value:${versions.immutables}"
             )
 
     testImplementation(
