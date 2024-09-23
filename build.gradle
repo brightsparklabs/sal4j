@@ -18,8 +18,11 @@ plugins {
     id 'groovy'
 
     // Apply bintray plugin for publishing artifacts
-    id "com.jfrog.bintray" version "1.8.5"
     id "maven-publish"
+    // Maven Central requires artifacts to be signed.
+    id 'signing'
+    // Maven Central requires artifacts to be released via Sonatype Nexus.
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
 sourceCompatibility = 1.8
@@ -33,6 +36,8 @@ project.description  = 'Simple Audit Logging for Java'
 project.ext.url      = 'https://github.com/brightsparklabs/sal4j'
 project.ext.scm      = 'https://github.com/brightsparklabs/sal4j.git'
 
+project.version = '0.1.0-1'
+
 // -----------------------------------------------------------------------------
 // REPOSITORIES/DEPENDENCIES
 // -----------------------------------------------------------------------------
@@ -40,7 +45,7 @@ project.ext.scm      = 'https://github.com/brightsparklabs/sal4j.git'
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -80,81 +85,86 @@ dependencies {
 }
 
 // -----------------------------------------------------------------------------
-// PUBLISH ARTIFACTS (via bintray)
+// SETUP ARTIFACTS FOR PUBLISHING
 // -----------------------------------------------------------------------------
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['Publication']
-    override = true
-    publish = true
-    pkg {
-        repo = 'maven'
-        name = project.name
-        userOrg = 'brightsparklabs'
-        licenses = ['MIT']
-        vcsUrl = project.ext.url
-        version {
-            name = project.version
-            vcsTag = project.version
-            released = new Date()
-        }
-    }
-}
-
-// Include javadoc and sources (requirements for publishing to Maven Central)
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-def pomConfig = {
-    name project.name
-    packaging 'jar'
-    description project.description
-    url project.url
-
-    scm {
-        connection project.scm
-        developerConnection project.scm
-        url project.scm
-    }
-
-    licenses {
-        license {
-            name 'MIT License'
-            url 'http://www.opensource.org/licenses/mit-license.php'
-        }
-    }
-
-    developers {
-        developer {
-            id 'brightsparklabs'
-            name 'brightSPARK Labs'
-            email 'enquire@brightsparklabs.com'
-        }
-    }
+// Maven Central requires javadoc and sources.
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
     publications {
-        Publication(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
+        mavenJava(MavenPublication) {
             groupId project.group
             artifactId project.name
             version project.version
-            pom.withXml {
-                def root = asNode()
-                root.children().last() + pomConfig
+            from components.java
+
+            // Maven Central requires specific POM attributes.
+            pom {
+                name = project.name
+                description = project.description
+                url = project.url
+
+                scm {
+                    connection = project.scm
+                    developerConnection = project.scm
+                    url = project.scm
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'brightsparklabs'
+                        name = 'brightSPARK Labs'
+                        email = 'enquire@brightsparklabs.com'
+                    }
+                }
             }
         }
     }
+}
+
+// Maven Central requires signed artifacts.
+signing {
+    def signingKey = findProperty('signingKey')
+    def signingPassword = findProperty('signingPassword')
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
+
+    // Only require signing when publishing (otherwise normal builds would need GPG keys).
+    required { gradle.taskGraph.hasTask('publishToSonatype') }
+}
+
+// -----------------------------------------------------------------------------
+// PUBLISH ARTIFACTS (via nexus)
+// -----------------------------------------------------------------------------
+
+nexusPublishing {
+    repositories {
+        // Credentials default to:
+        // - Property `sonatypeUsername` or ENV variable `ORG_GRADLE_PROJECT_sonatypeUsername`.
+        // - Property `sonatypePassword` or ENV variable ORG_GRADLE_PROJECT_sonatypePassword`.
+        sonatype()
+    }
+}
+
+
+task prePublishToMavenCentral {
+    group 'brightSPARK Labs - Maven Central Publishing'
+    description 'Stages the release on Sonatype ready for publishing to Maven Central.'
+    dependsOn 'publishToSonatype', 'closeSonatypeStagingRepository'
+}
+task publishToMavenCentral {
+    group 'brightSPARK Labs - Maven Central Publishing'
+    description 'Publishes the release to Maven Central.'
+    dependsOn 'publishToSonatype', 'closeAndReleaseSonatypeStagingRepository'
 }
