@@ -82,7 +82,7 @@ dependencies {
             'com.github.spotbugs:spotbugs-annotations:4.9.0',
 
             // Logger implementation.
-            'ch.qos.logback:logback-classic:1.5.15'
+            'ch.qos.logback:logback-classic:1.5.16'
             )
 }
 
