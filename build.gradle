@@ -100,7 +100,7 @@ dependencies {
 // VARIABLES
 // -----------------------------------------------------------------------------
 
-/** The directory to stage artifacts for publishing. */
+// The directory to stage artifacts for publishing.
 def stagingDeployDir = layout.buildDirectory.dir('staging-deploy')
 
 // -----------------------------------------------------------------------------
@@ -220,15 +220,15 @@ jreleaser {
         secretKey = findProperty("signingKey")
     }
 
-    /** Artifact deployment configuration. */
+    // Artifact deployment configuration.
     deploy {
-        /** Deploy staged artifacts to target Maven compatible repositories. */
+        // Deploy staged artifacts to target Maven compatible repositories.
         maven {
             /* Deploy staged artifacts to Maven Central using the publisher API.
              * See https://jreleaser.org/guide/latest/reference/deploy/maven/maven-central.html
              */
             mavenCentral {
-                /** The name of the deployer (deployers require a name). */
+                // The name of the deployer (deployers require a name).
                 app {
                     /* Enables or disables the deployer.
                      * Supported values are [`NEVER`, `ALWAYS`, `RELEASE`, `SNAPSHOT`].
@@ -236,7 +236,7 @@ jreleaser {
                      */
                     active = 'ALWAYS'
 
-                    /** URL where the MavenCentral service is enabled. */
+                    // URL where the MavenCentral service is enabled.
                     url = 'https://central.sonatype.com/api/v1/publisher'
 
                     /* The username required for authorization.
@@ -313,7 +313,7 @@ jreleaser {
                      */
                     applyMavenCentralRules = true
 
-                    /** List of directories where staged artifacts can be found. */
+                    // List of directories where staged artifacts can be found.
                     stagingRepository(stagingDeployDir.get().asFile.toString())
                 }
             }
