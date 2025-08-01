@@ -84,7 +84,7 @@ dependencies {
 
     testImplementation(
             // Use the awesome Spock testing and specification framework even with Java
-            'org.apache.groovy:groovy-all:4.0.27',
+            'org.apache.groovy:groovy-all:4.0.28',
             'org.spockframework:spock-core:2.4-M5-groovy-4.0',
             'junit:junit:4.13.2',
 
