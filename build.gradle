@@ -89,7 +89,7 @@ dependencies {
             'junit:junit:4.13.2',
 
             // So that we can suppress some spotbugs reports
-            'com.github.spotbugs:spotbugs-annotations:4.9.3',
+            'com.github.spotbugs:spotbugs-annotations:4.9.4',
 
             // Logger implementation.
             'ch.qos.logback:logback-classic:1.5.18'
