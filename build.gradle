@@ -71,7 +71,7 @@ dependencies {
     implementation(
             // General
             'org.slf4j:slf4j-api:2.0.16',
-            'net.logstash.logback:logstash-logback-encoder:8.1'
+            'net.logstash.logback:logstash-logback-encoder:9.0'
             )
 
     compileOnly(
